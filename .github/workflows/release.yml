@@ -62,3 +62,56 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  aur:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Setup SSH for AUR
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_SSH_KEY }}" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          echo "Host aur.archlinux.org" >> ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/aur" >> ~/.ssh/config
+          echo "  User aur" >> ~/.ssh/config
+          ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
+
+      - name: Clone AUR repo
+        run: git clone ssh://aur@aur.archlinux.org/python-sqlit-tui.git aur-repo
+
+      - name: Update PKGBUILD
+        run: |
+          cd aur-repo
+          VERSION=${{ steps.version.outputs.VERSION }}
+
+          # Download new tarball and get checksum
+          CHECKSUM=$(curl -sL "https://files.pythonhosted.org/packages/source/s/sqlit-tui/sqlit_tui-${VERSION}.tar.gz" | sha256sum | cut -d' ' -f1)
+
+          # Update version and checksum in PKGBUILD
+          sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+          sed -i "s/^sha256sums=.*/sha256sums=('${CHECKSUM}')/" PKGBUILD
+
+          # Regenerate .SRCINFO
+          docker run --rm -v "$PWD:/pkg" archlinux:latest bash -c "
+            pacman -Sy --noconfirm pacman-contrib
+            cd /pkg
+            chown -R nobody:nobody .
+            su nobody -s /bin/bash -c 'makepkg --printsrcinfo > .SRCINFO'
+          "
+
+      - name: Push to AUR
+        run: |
+          cd aur-repo
+          git config user.email "peter.w.adams96@gmail.com"
+          git config user.name "Peter"
+          git add PKGBUILD .SRCINFO
+          git diff --staged --quiet || git commit -m "Update to v${{ steps.version.outputs.VERSION }}"
+          git push

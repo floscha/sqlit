@@ -1,11 +1,31 @@
-"""Configuration management for sqlit."""
+"""Configuration management for sqlit.
+
+This module contains domain types (DatabaseType, AuthType, ConnectionConfig)
+and re-exports persistence functions from stores for backward compatibility.
+"""
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+
+# Re-export store paths for backward compatibility
+from .stores.base import CONFIG_DIR
+
+CONFIG_PATH = CONFIG_DIR / "connections.json"
+SETTINGS_PATH = CONFIG_DIR / "settings.json"
+HISTORY_PATH = CONFIG_DIR / "query_history.json"
+
+# Re-export persistence functions from stores
+from .stores.connections import load_connections, save_connections
+from .stores.history import (
+    QueryHistoryEntry,
+    delete_query_from_history,
+    load_query_history,
+    save_query_to_history,
+)
+from .stores.settings import load_settings, save_settings
 
 
 class DatabaseType(Enum):
@@ -147,132 +167,3 @@ class ConnectionConfig:
 
         db_part = f"@{self.database}" if self.database else ""
         return f"{self.name}{db_part}"
-
-
-CONFIG_DIR = Path.home() / ".sqlit"
-CONFIG_PATH = CONFIG_DIR / "connections.json"
-SETTINGS_PATH = CONFIG_DIR / "settings.json"
-HISTORY_PATH = CONFIG_DIR / "query_history.json"
-
-
-def load_settings() -> dict:
-    """Load app settings from config file."""
-    if not SETTINGS_PATH.exists():
-        return {}
-    try:
-        with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, TypeError):
-        return {}
-
-
-def save_settings(settings: dict) -> None:
-    """Save app settings to config file."""
-    SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
-        json.dump(settings, f, indent=2)
-
-
-def load_connections() -> list[ConnectionConfig]:
-    """Load saved connections from config file."""
-    if not CONFIG_PATH.exists():
-        return []
-    try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return [ConnectionConfig(**conn) for conn in data]
-    except (json.JSONDecodeError, TypeError):
-        return []
-
-
-def save_connections(connections: list[ConnectionConfig]) -> None:
-    """Save connections to config file."""
-    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump([vars(c) for c in connections], f, indent=2)
-
-
-@dataclass
-class QueryHistoryEntry:
-    """A query history entry."""
-
-    query: str
-    timestamp: str  # ISO format
-    connection_name: str
-
-    def to_dict(self) -> dict:
-        return {
-            "query": self.query,
-            "timestamp": self.timestamp,
-            "connection_name": self.connection_name,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "QueryHistoryEntry":
-        return cls(
-            query=data["query"],
-            timestamp=data["timestamp"],
-            connection_name=data["connection_name"],
-        )
-
-
-def load_query_history(connection_name: str) -> list[QueryHistoryEntry]:
-    """Load query history for a specific connection, sorted by most recent first."""
-    if not HISTORY_PATH.exists():
-        return []
-    try:
-        with open(HISTORY_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            entries = [
-                QueryHistoryEntry.from_dict(entry)
-                for entry in data
-                if entry.get("connection_name") == connection_name
-            ]
-            # Sort by timestamp descending (most recent first)
-            entries.sort(key=lambda e: e.timestamp, reverse=True)
-            return entries
-    except (json.JSONDecodeError, TypeError, KeyError):
-        return []
-
-
-def save_query_to_history(connection_name: str, query: str) -> None:
-    """Save a query to history for a connection."""
-    from datetime import datetime
-
-    # Load existing history
-    all_entries: list[dict] = []
-    if HISTORY_PATH.exists():
-        try:
-            with open(HISTORY_PATH, "r", encoding="utf-8") as f:
-                all_entries = json.load(f)
-        except (json.JSONDecodeError, TypeError):
-            all_entries = []
-
-    # Check if this exact query already exists for this connection
-    query_stripped = query.strip()
-    for entry in all_entries:
-        if entry.get("connection_name") == connection_name and entry.get("query", "").strip() == query_stripped:
-            # Update timestamp of existing entry
-            entry["timestamp"] = datetime.now().isoformat()
-            break
-    else:
-        # Add new entry
-        new_entry = QueryHistoryEntry(
-            query=query_stripped,
-            timestamp=datetime.now().isoformat(),
-            connection_name=connection_name,
-        )
-        all_entries.append(new_entry.to_dict())
-
-    # Keep only last 100 entries per connection
-    connection_entries = [e for e in all_entries if e.get("connection_name") == connection_name]
-    other_entries = [e for e in all_entries if e.get("connection_name") != connection_name]
-
-    # Sort and limit connection entries
-    connection_entries.sort(key=lambda e: e.get("timestamp", ""), reverse=True)
-    connection_entries = connection_entries[:100]
-
-    # Save
-    HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(HISTORY_PATH, "w", encoding="utf-8") as f:
-        json.dump(other_entries + connection_entries, f, indent=2)

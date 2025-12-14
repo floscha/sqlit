@@ -1,0 +1,51 @@
+"""Help screen showing keyboard shortcuts."""
+
+from __future__ import annotations
+
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.containers import VerticalScroll
+from textual.screen import ModalScreen
+from textual.widgets import Static
+
+from ...widgets import Dialog
+
+
+class HelpScreen(ModalScreen):
+    """Modal screen showing keyboard shortcuts and navigation tips."""
+
+    BINDINGS = [
+        Binding("escape", "dismiss", "Close"),
+        Binding("q", "dismiss", "Close"),
+    ]
+
+    CSS = """
+    HelpScreen {
+        align: center middle;
+        background: transparent;
+    }
+
+    #help-dialog {
+        width: 90;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    #help-scroll {
+        height: auto;
+        background: $surface;
+        border: none;
+    }
+    """
+
+    def __init__(self, help_text: str):
+        super().__init__()
+        self.help_text = help_text
+
+    def compose(self) -> ComposeResult:
+        with Dialog(id="help-dialog", title="Help", shortcuts=[("Close", "Esc")]):
+            with VerticalScroll(id="help-scroll"):
+                yield Static(self.help_text)
+
+    def action_dismiss(self) -> None:
+        self.dismiss(None)

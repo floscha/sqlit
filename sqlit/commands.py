@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import csv
 import json
+import sys
 
 from .adapters import create_ssh_tunnel, get_adapter
 from .config import (
@@ -270,15 +272,17 @@ def cmd_query(args) -> int:
         is_select_query = query_type in ("SELECT", "WITH", "SHOW", "DESCRIBE", "EXPLAIN", "PRAGMA")
 
         if is_select_query:
-            columns, rows = adapter.execute_query(db_conn, query)
+            columns, rows, _truncated = adapter.execute_query(db_conn, query)
         else:
             columns, rows = [], []
 
         if columns:
             if args.format == "csv":
-                print(",".join(columns))
+                # Use proper CSV writer for correct quoting/escaping
+                writer = csv.writer(sys.stdout)
+                writer.writerow(columns)
                 for row in rows:
-                    print(",".join(str(val) if val is not None else "" for val in row))
+                    writer.writerow(str(val) if val is not None else "" for val in row)
             elif args.format == "json":
                 result = []
                 for row in rows:

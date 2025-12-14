@@ -1,6 +1,8 @@
 # sqlit
 
-A simple terminal UI for SQL Server, PostgreSQL, MySQL, SQLite, and more—built for people who just want to run some queries fast.
+**The lazygit of SQL databases.** Connect to Postgres, MySQL, SQL Server, or SQLite from your terminal in seconds.
+
+A lightweight TUI for people who just want to run some queries fast.
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)

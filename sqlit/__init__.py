@@ -1,11 +1,14 @@
-"""sqlit - A terminal UI for SQL Server."""
+"""sqlit - A terminal UI for SQL databases."""
 
-__version__ = "0.1.0"
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("sqlit-tui")
+except PackageNotFoundError:
+    # Package not installed (development mode without editable install)
+    __version__ = "0.0.0.dev"
+
 __author__ = "Peter"
-
-from .cli import main
-from .app import SSMSTUI
-from .config import AuthType, ConnectionConfig
 
 __all__ = [
     "main",
@@ -13,3 +16,20 @@ __all__ = [
     "AuthType",
     "ConnectionConfig",
 ]
+
+
+def __getattr__(name: str):
+    """Lazy import for heavy modules to keep package import side-effect free."""
+    if name == "main":
+        from .cli import main
+        return main
+    if name == "SSMSTUI":
+        from .app import SSMSTUI
+        return SSMSTUI
+    if name == "AuthType":
+        from .config import AuthType
+        return AuthType
+    if name == "ConnectionConfig":
+        from .config import ConnectionConfig
+        return ConnectionConfig
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -38,10 +38,12 @@ dependencies = [
 test = [
     "pytest>=7.0",
     "pytest-timeout>=2.0",
+    "pytest-asyncio>=0.23.0",
 ]
 dev = [
     "pytest>=7.0",
     "pytest-timeout>=2.0",
+    "pytest-asyncio>=0.23.0",
     "build",
 ]
 
@@ -61,10 +63,13 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "sqlite: SQLite database tests",
     "mssql: SQL Server database tests",
     "postgresql: PostgreSQL database tests",
     "mysql: MySQL database tests",
     "oracle: Oracle database tests",
+    "asyncio: async tests",
 ]
