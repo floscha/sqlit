@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 
 import pytest
 
@@ -15,6 +16,16 @@ class TestSSHTunnelIntegration:
     - A PostgreSQL instance accessible from the SSH server
     Tests are skipped if SSH server is not available.
     """
+
+    @pytest.fixture(autouse=True)
+    def slow_down_ssh_tests(self):
+        """Add a small delay between SSH tests to avoid overwhelming the server.
+
+        Note: SSH tests may fail when run together rapidly due to SSH server
+        connection limits. Run individually with: pytest tests/test_ssh.py -k <test_name>
+        """
+        time.sleep(1)  # Wait before each test
+        yield
 
     def test_create_ssh_connection(self, ssh_postgres_db, cli_runner):
         """Test creating a PostgreSQL connection with SSH tunnel via CLI."""

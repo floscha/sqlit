@@ -99,3 +99,60 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
+
+  turso:
+    image: ghcr.io/tursodatabase/libsql-server:latest
+    container_name: sqlit-test-turso
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # SSH server for testing SSH tunnel connections
+  # Connects to postgres container on docker network
+  ssh:
+    image: linuxserver/openssh-server:latest
+    container_name: sqlit-test-ssh
+    environment:
+      PUID: 1000
+      PGID: 1000
+      USER_NAME: testuser
+      USER_PASSWORD: testpass
+      PASSWORD_ACCESS: "true"
+      # Enable TCP forwarding for SSH tunnels
+      DOCKER_MODS: "linuxserver/mods:openssh-server-ssh-tunnel"
+    ports:
+      - "2222:2222"
+    volumes:
+      - ./tests/fixtures/99-fix-sshd-config.sh:/custom-cont-init.d/99-fix-sshd-config
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2222"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      - postgres-ssh
+
+  # PostgreSQL for SSH tunnel tests (separate instance accessible via SSH)
+  postgres-ssh:
+    image: postgres:16-alpine
+    container_name: sqlit-test-postgres-ssh
+    environment:
+      POSTGRES_USER: "testuser"
+      POSTGRES_PASSWORD: "TestPassword123!"
+      POSTGRES_DB: "test_sqlit"
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d test_sqlit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    tmpfs:
+      - /var/lib/postgresql/data

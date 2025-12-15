@@ -1201,6 +1201,132 @@ def cockroachdb_connection(cockroachdb_db: str) -> str:
 
 
 # =============================================================================
+# Turso (libSQL) Fixtures
+# =============================================================================
+
+# Turso connection settings for Docker (libsql-server)
+TURSO_HOST = os.environ.get("TURSO_HOST", "localhost")
+TURSO_PORT = int(os.environ.get("TURSO_PORT", "8081"))
+
+
+def turso_available() -> bool:
+    """Check if Turso (libsql-server) is available."""
+    return is_port_open(TURSO_HOST, TURSO_PORT)
+
+
+@pytest.fixture(scope="session")
+def turso_server_ready() -> bool:
+    """Check if Turso is ready and return True/False."""
+    if not turso_available():
+        return False
+
+    # Wait a bit for libsql-server to be fully ready
+    time.sleep(1)
+    return True
+
+
+@pytest.fixture(scope="function")
+def turso_db(turso_server_ready: bool) -> str:
+    """Set up Turso test database."""
+    if not turso_server_ready:
+        pytest.skip("Turso (libsql-server) is not available")
+
+    try:
+        from libsql_client import create_client_sync
+    except ImportError:
+        pytest.skip("libsql-client is not installed")
+
+    turso_url = f"http://{TURSO_HOST}:{TURSO_PORT}"
+
+    try:
+        client = create_client_sync(turso_url)
+
+        # Drop tables if they exist and recreate
+        client.execute("DROP TABLE IF EXISTS test_users")
+        client.execute("DROP TABLE IF EXISTS test_products")
+        client.execute("DROP VIEW IF EXISTS test_user_emails")
+
+        # Create test tables
+        client.execute("""
+            CREATE TABLE test_users (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE
+            )
+        """)
+
+        client.execute("""
+            CREATE TABLE test_products (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                price REAL NOT NULL,
+                stock INTEGER DEFAULT 0
+            )
+        """)
+
+        # Create test view
+        client.execute("""
+            CREATE VIEW test_user_emails AS
+            SELECT id, name, email FROM test_users WHERE email IS NOT NULL
+        """)
+
+        # Insert test data
+        client.execute("""
+            INSERT INTO test_users (id, name, email) VALUES
+            (1, 'Alice', 'alice@example.com'),
+            (2, 'Bob', 'bob@example.com'),
+            (3, 'Charlie', 'charlie@example.com')
+        """)
+
+        client.execute("""
+            INSERT INTO test_products (id, name, price, stock) VALUES
+            (1, 'Widget', 9.99, 100),
+            (2, 'Gadget', 19.99, 50),
+            (3, 'Gizmo', 29.99, 25)
+        """)
+
+        client.close()
+
+    except Exception as e:
+        pytest.skip(f"Failed to setup Turso database: {e}")
+
+    yield turso_url
+
+    # Cleanup: drop test tables
+    try:
+        client = create_client_sync(turso_url)
+        client.execute("DROP TABLE IF EXISTS test_users")
+        client.execute("DROP TABLE IF EXISTS test_products")
+        client.execute("DROP VIEW IF EXISTS test_user_emails")
+        client.close()
+    except Exception:
+        pass
+
+
+@pytest.fixture(scope="function")
+def turso_connection(turso_db: str) -> str:
+    """Create a sqlit CLI connection for Turso and clean up after test."""
+    connection_name = f"test_turso_{os.getpid()}"
+
+    # Clean up any existing connection with this name
+    cleanup_connection(connection_name)
+
+    # Create the connection (no auth token needed for local libsql-server)
+    run_cli(
+        "connection", "create",
+        "--name", connection_name,
+        "--db-type", "turso",
+        "--server", turso_db,
+        "--password", "",  # No auth token for local server
+    )
+
+    yield connection_name
+
+    # Cleanup
+    cleanup_connection(connection_name)
+
+
+# =============================================================================
 # SSH Tunnel Fixtures
 # =============================================================================
 
@@ -1210,7 +1336,7 @@ SSH_PORT = int(os.environ.get("SSH_PORT", "2222"))
 SSH_USER = os.environ.get("SSH_USER", "testuser")
 SSH_PASSWORD = os.environ.get("SSH_PASSWORD", "testpass")
 # The PostgreSQL host as seen from the SSH server (docker network)
-SSH_REMOTE_DB_HOST = os.environ.get("SSH_REMOTE_DB_HOST", "postgres")
+SSH_REMOTE_DB_HOST = os.environ.get("SSH_REMOTE_DB_HOST", "postgres-ssh")
 SSH_REMOTE_DB_PORT = int(os.environ.get("SSH_REMOTE_DB_PORT", "5432"))
 
 
@@ -1240,9 +1366,12 @@ def ssh_postgres_db(ssh_server_ready: bool) -> str:
         pytest.skip("psycopg2 is not installed")
 
     # Connect directly to PostgreSQL to set up test data
-    # In CI, PostgreSQL is accessible directly on the host
+    # postgres-ssh container is accessible on port 5433
     pg_host = os.environ.get("SSH_DIRECT_PG_HOST", "localhost")
     pg_port = int(os.environ.get("SSH_DIRECT_PG_PORT", "5433"))
+    pg_user = POSTGRES_USER
+    pg_password = POSTGRES_PASSWORD
+    pg_database = POSTGRES_DATABASE
 
     try:
         conn = psycopg2.connect(
