@@ -121,6 +121,27 @@ You can also receive autocompletion on columns by typing the table name and hitt
 
 Connections and settings are stored in `~/.sqlit/`.
 
+## FAQ
+
+### How are sensitive credentials stored?
+
+Credentials are stored in plain text in a protected directory (`~/.sqlit/`) with restricted file permissions (700/600).
+
+### How does sqlit compare to Harlequin, Lazysql, etc.?
+
+sqlit is inspired by [lazygit](https://github.com/jesseduffield/lazygit) - you can just jump in and there's no need for external documentation. The keybindings are shown at the bottom of the screen and the UI is designed to be intuitive without memorizing shortcuts.
+
+Key differences:
+- **No need for external documentation** - Sqlit embrace the "lazy" approach in that a user should be able to jump in and use it right away intuitively. There should be no setup instructions. If python packages are required for certain adapters, sqlit will help you install them as you need them. 
+- **No CLI config required** - Just run `sqlit` and pick a connection from the UI
+- **Lightweight** - While Lazysql or Marlequin offer more features, I experienced that for the vast majority of cases, all I needed is an simple and fast way to connect and run queries. Sqlit is centered about doing a limited amount of things really well.
+
+## Inspiration
+
+sqlit is built with [Textual](https://github.com/Textualize/textual) and inspired by:
+- [lazygit](https://github.com/jesseduffield/lazygit) - Simple  TUI for git
+- [lazysql](https://github.com/jorgerojas26/lazysql) - Terminal-based SQL client with connection manager
+
 ## Contributing
 
 See `CONTRIBUTING.md` for development setup, testing, CI, and CockroachDB quickstart steps.

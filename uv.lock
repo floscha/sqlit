@@ -571,7 +571,7 @@ wheels = [
 
 [[package]]
 name = "sqlit-tui"
-version = "0.3.5"
+version = "0.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "paramiko" },
