@@ -47,30 +47,18 @@ sqlit is a lightweight database TUI that is easy to use and beautiful to look at
 
 ### Method 1: `pipx` (Recommended)
 
-This is the recommended method. It installs `sqlit-tui` in an isolated environment, so optional drivers are easy to add later.
-
 1.  **Install pipx:** If you don't have pipx, you can install it with:
     ```bash
     python3 -m pip install --user pipx
     python3 -m pipx ensurepath
     ```
-    *(You may need to restart your terminal after this step)*
 
 2.  **Install sqlit-tui:**
     ```bash
     pipx install sqlit-tui
     ```
 
-3.  **Optional drivers (only if you need them):** `sqlit` will tell you what to install when a driver is missing, but you can also pre-install them. For example:
-    ```bash
-    # PostgreSQL / Supabase / CockroachDB
-    pipx inject sqlit-tui psycopg2-binary
-
-    # MySQL
-    pipx inject sqlit-tui mysql-connector-python
-    ```
-
-### Method 2: `uv` (Alternative)
+### Method 2: `uv`
 
 `uv` is a fast, modern installer. This also keeps things isolated and makes optional drivers easy.
 
@@ -78,22 +66,10 @@ This is the recommended method. It installs `sqlit-tui` in an isolated environme
 uv tool install sqlit-tui
 ```
 
-### Method 3: `pip` (Alternative)
-
-*(Note: To avoid dependency conflicts, installing in a virtual environment is recommended.)*
-
-You can install `sqlit-tui` and drivers directly with `pip` using "extras". The application will guide you if a driver is missing.
-If you installed Python via a system package manager (Homebrew, apt, pacman, etc.), `pip install` may be restricted; in that case, use `pipx`, `uv`, or a virtual environment.
+### Method 3: `pip`
 
 ```bash
-# To install with PostgreSQL and MySQL support
-pip install "sqlit-tui[postgres,mysql]"
-
-# To add a driver to an existing installation
-pip install "sqlit-tui[mariadb]"
-
-# To install all drivers
-pip install "sqlit-tui[all]"
+pip install "sqlit-tui"
 ```
 
 ## Usage
