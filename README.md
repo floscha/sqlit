@@ -15,6 +15,9 @@ A lightweight TUI for people who just want to run some queries fast.
 **Filter results**
 ![Filter results](demos/demo-filter/demo-filter.gif)
 
+**Docker discovery**
+![Filter results](demos/demo-docker-picker.gif)
+
 
 ## Features
 
