@@ -89,7 +89,7 @@ DATABASE_CONFIGS = [
         internal_port=5432,
         expected_user="postgres",  # Default
         expected_password="secretpass",
-        expected_database="postgres",  # Default
+        expected_database=None,  # No default_database anymore
         startup_time=3,
     ),
     # MySQL - root password only
@@ -167,7 +167,7 @@ DATABASE_CONFIGS = [
         internal_port=1433,
         expected_user="sa",
         expected_password="StrongP@ss123!",
-        expected_database="master",
+        expected_database=None,  # No default_database anymore
         startup_time=15,
     ),
     # SQL Server with MSSQL_SA_PASSWORD
@@ -182,7 +182,7 @@ DATABASE_CONFIGS = [
         internal_port=1433,
         expected_user="sa",
         expected_password="AltP@ssword456!",
-        expected_database="master",
+        expected_database=None,  # No default_database anymore
         startup_time=15,
     ),
     # ClickHouse
@@ -195,7 +195,7 @@ DATABASE_CONFIGS = [
             "CLICKHOUSE_PASSWORD": "chpass",
             "CLICKHOUSE_DB": "chdb",
         },
-        internal_port=9000,
+        internal_port=8123,  # HTTP interface port
         expected_user="chuser",
         expected_password="chpass",
         expected_database="chdb",
@@ -207,10 +207,10 @@ DATABASE_CONFIGS = [
         image="clickhouse/clickhouse-server:23.8",
         db_type="clickhouse",
         env_vars={},
-        internal_port=9000,
+        internal_port=8123,  # HTTP interface port
         expected_user="default",
         expected_password=None,
-        expected_database="default",
+        expected_database=None,  # No default_database anymore
         startup_time=5,
     ),
     # CockroachDB
@@ -222,7 +222,7 @@ DATABASE_CONFIGS = [
         internal_port=26257,
         expected_user="root",
         expected_password=None,
-        expected_database="defaultdb",
+        expected_database=None,  # No default_database anymore
         startup_time=10,
     ),
     # Oracle Free

@@ -85,7 +85,7 @@ class TestCredentialExtraction:
         creds = _get_container_credentials("postgresql", {})
         assert creds["user"] == "postgres"
         assert creds["password"] is None
-        assert creds["database"] == "postgres"
+        assert creds["database"] is None
 
     def test_mysql_root_password(self):
         """Test MySQL with root password."""
@@ -112,7 +112,7 @@ class TestCredentialExtraction:
         creds = _get_container_credentials("mssql", env_vars)
         assert creds["user"] == "sa"
         assert creds["password"] == "StrongP@ssw0rd"
-        assert creds["database"] == "master"
+        assert creds["database"] is None
 
     def test_mariadb_fallback_to_mysql_vars(self):
         """Test MariaDB falls back to MYSQL_ vars."""
@@ -433,7 +433,7 @@ class TestDefaultPorts:
         assert DEFAULT_PORTS["mysql"] == 3306
         assert DEFAULT_PORTS["mariadb"] == 3306
         assert DEFAULT_PORTS["mssql"] == 1433
-        assert DEFAULT_PORTS["clickhouse"] == 9000
+        assert DEFAULT_PORTS["clickhouse"] == 8123
         assert DEFAULT_PORTS["cockroachdb"] == 26257
         assert DEFAULT_PORTS["oracle"] == 1521
         assert DEFAULT_PORTS["turso"] == 8080

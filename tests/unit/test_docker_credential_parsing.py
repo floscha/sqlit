@@ -106,7 +106,7 @@ class TestPostgreSQLCredentials:
         creds = _get_container_credentials("postgresql", {})
         assert creds["user"] == "postgres"
         assert creds["password"] is None
-        assert creds["database"] == "postgres"
+        assert creds["database"] is None
 
     def test_password_only(self):
         """Test with only password set (common minimal config)."""
@@ -114,7 +114,7 @@ class TestPostgreSQLCredentials:
         creds = _get_container_credentials("postgresql", env)
         assert creds["user"] == "postgres"
         assert creds["password"] == "secret"
-        assert creds["database"] == "postgres"
+        assert creds["database"] is None
 
     def test_user_without_password(self):
         """Test custom user without password (trust auth)."""
@@ -285,7 +285,7 @@ class TestSQLServerCredentials:
         creds = _get_container_credentials("mssql", env)
         assert creds["user"] == "sa"
         assert creds["password"] == "StrongP@ss123"
-        assert creds["database"] == "master"
+        assert creds["database"] is None
 
     def test_mssql_sa_password(self):
         """Test alternative MSSQL_SA_PASSWORD."""
@@ -331,7 +331,7 @@ class TestClickHouseCredentials:
         creds = _get_container_credentials("clickhouse", {})
         assert creds["user"] == "default"
         assert creds["password"] is None
-        assert creds["database"] == "default"
+        assert creds["database"] is None
 
     def test_password_only(self):
         """Test with only password set."""
@@ -361,7 +361,7 @@ class TestCockroachDBCredentials:
         creds = _get_container_credentials("cockroachdb", {})
         assert creds["user"] == "root"
         assert creds["password"] is None
-        assert creds["database"] == "defaultdb"
+        assert creds["database"] is None
 
 
 class TestEdgeCases:
