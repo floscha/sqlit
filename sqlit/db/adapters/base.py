@@ -179,6 +179,23 @@ class DatabaseAdapter(ABC):
         """
         return False
 
+    @property
+    def test_query(self) -> str:
+        """A simple query to test the connection.
+
+        Override in subclasses for databases that need special syntax.
+        """
+        return "SELECT 1"
+
+    def execute_test_query(self, conn: Any) -> None:
+        """Execute a simple query to verify the connection works.
+
+        Override in subclasses for databases with non-standard APIs.
+        """
+        cursor = conn.cursor()
+        cursor.execute(self.test_query)
+        cursor.fetchone()
+
     def format_table_name(self, schema: str, name: str) -> str:
         """Format a table name for display, omitting default schema.
 

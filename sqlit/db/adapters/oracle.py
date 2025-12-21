@@ -48,6 +48,10 @@ class OracleAdapter(DatabaseAdapter):
         """Oracle supports sequences."""
         return True
 
+    @property
+    def test_query(self) -> str:
+        return "SELECT 1 FROM DUAL"
+
     def connect(self, config: ConnectionConfig) -> Any:
         """Connect to Oracle database."""
         try:

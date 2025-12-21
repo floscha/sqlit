@@ -41,6 +41,13 @@ class TursoAdapter(DatabaseAdapter):
     def supports_stored_procedures(self) -> bool:
         return False
 
+    def execute_test_query(self, conn: Any) -> None:
+        """Execute a simple query to verify the connection works.
+
+        Turso uses a different API (no cursor, direct execute on connection).
+        """
+        conn.execute(self.test_query)
+
     def connect(self, config: ConnectionConfig) -> Any:
         """Connect to Turso database.
 
