@@ -21,6 +21,7 @@ from .schema import (
     D1_SCHEMA,
     DUCKDB_SCHEMA,
     FIREBIRD_SCHEMA,
+    SNOWFLAKE_SCHEMA,
     MARIADB_SCHEMA,
     MSSQL_SCHEMA,
     MYSQL_SCHEMA,
@@ -95,6 +96,10 @@ PROVIDERS: dict[str, ProviderSpec] = {
     "firebird": ProviderSpec(
         schema=FIREBIRD_SCHEMA,
         adapter_path=("sqlit.db.adapters.firebird", "FirebirdAdapter"),
+    ),
+    "snowflake": ProviderSpec(
+        schema=SNOWFLAKE_SCHEMA,
+        adapter_path=("sqlit.db.adapters.snowflake", "SnowflakeAdapter"),
     ),
 }
 

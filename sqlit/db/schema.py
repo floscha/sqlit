@@ -527,6 +527,46 @@ FIREBIRD_SCHEMA = ConnectionSchema(
 )
 
 
+SNOWFLAKE_SCHEMA = ConnectionSchema(
+    db_type="snowflake",
+    display_name="Snowflake",
+    fields=(
+        SchemaField(
+            name="server",
+            label="Account",
+            placeholder="xy12345.us-east-2.aws",
+            required=True,
+            description="Snowflake Account Identifier",
+        ),
+        _username_field(),
+        _password_field(),
+        _database_field(),
+        SchemaField(
+            name="warehouse",
+            label="Warehouse",
+            placeholder="COMPUTE_WH",
+            required=False,
+            description="Virtual Warehouse to use",
+        ),
+        SchemaField(
+            name="schema",
+            label="Schema",
+            placeholder="PUBLIC",
+            required=False,
+            description="Initial Schema",
+        ),
+        SchemaField(
+            name="role",
+            label="Role",
+            placeholder="ACCOUNTADMIN",
+            required=False,
+            description="User Role",
+        ),
+    ),
+    supports_ssh=False,  # Snowflake is cloud-native, usually doesn't need SSH tunnel
+)
+
+
 def get_connection_schema(db_type: str) -> ConnectionSchema:
     from .providers import get_connection_schema as _get_connection_schema
 
