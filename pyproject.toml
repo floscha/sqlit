@@ -42,6 +42,7 @@ all = [
     "mariadb>=1.1.0",
     "oracledb>=2.0.0",
     "duckdb>=1.1.0",  # min avoids known CVEs
+    "clickhouse-connect>=0.7.0",
     "requests>=2.32.4",  # min avoids known CVEs
     "libsql-client>=0.1.0",
     "sshtunnel>=0.4.0",
@@ -54,6 +55,7 @@ mysql = ["mysql-connector-python>=9.1.0"]  # min avoids known CVEs
 mariadb = ["mariadb>=1.1.0"]
 oracle = ["oracledb>=2.0.0"]
 duckdb = ["duckdb>=1.1.0"]  # min avoids known CVEs
+clickhouse = ["clickhouse-connect>=0.7.0"]
 d1 = ["requests>=2.32.4"]  # min avoids known CVEs
 turso = ["libsql-client>=0.1.0"]
 ssh = [
@@ -110,6 +112,7 @@ markers = [
     "postgresql: PostgreSQL database tests",
     "mysql: MySQL database tests",
     "oracle: Oracle database tests",
+    "clickhouse: ClickHouse database tests",
     "asyncio: async tests",
     "integration: integration tests (may require external services)",
 ]
@@ -142,6 +145,7 @@ module = [
     "mariadb",
     "oracledb",
     "duckdb",
+    "clickhouse_connect",
     "libsql_client",
     "sshtunnel",
     "docker",
