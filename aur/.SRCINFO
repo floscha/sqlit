@@ -1,6 +1,6 @@
 pkgbase = python-sqlit-tui
 	pkgdesc = The lazygit of SQL databases - a lightweight TUI for SQL Server, PostgreSQL, MySQL, SQLite, and more
-	pkgver = 0.3.5
+	pkgver = 0.5.1
 	pkgrel = 1
 	url = https://github.com/Maxteabag/sqlit
 	arch = any
@@ -9,17 +9,23 @@ pkgbase = python-sqlit-tui
 	makedepends = python-installer
 	makedepends = python-hatchling
 	depends = python>=3.10
-	depends = python-textual
-	depends = python-pyodbc
-	depends = python-pyperclip
-	depends = python-sshtunnel
-	depends = python-paramiko
-	optdepends = python-psycopg2: PostgreSQL and CockroachDB support
+	depends = python-textual>=6.10.0
+	depends = python-textual-fastdatatable>=0.14.0
+	depends = python-pyperclip>=1.8.2
+	depends = python-keyring>=24.0.0
+	depends = python-docker>=7.0.0
+	optdepends = python-psycopg2: PostgreSQL, CockroachDB and Supabase support
+	optdepends = python-pyodbc: SQL Server support
 	optdepends = python-mysql-connector: MySQL support
+	optdepends = python-mariadb-connector: MariaDB support
 	optdepends = python-oracledb: Oracle support
-	optdepends = python-mariadb: MariaDB support
 	optdepends = python-duckdb: DuckDB support
-	source = https://files.pythonhosted.org/packages/source/s/sqlit-tui/sqlit_tui-0.3.5.tar.gz
-	sha256sums = 61ef2908a344cb8a22196d41975a4b91d17e23b1291199c8e55f93fbed051214
+	optdepends = python-clickhouse-connect: ClickHouse support
+	optdepends = python-requests: Cloudflare D1 support
+	optdepends = python-snowflake-connector-python: Snowflake support
+	optdepends = python-paramiko: SSH tunnel support
+	optdepends = python-sshtunnel: SSH tunnel support
+	source = https://files.pythonhosted.org/packages/source/s/sqlit-tui/sqlit_tui-0.5.1.tar.gz
+	sha256sums = 7208de056cabafb2a47f1c47478ab99e9f1dbac6c2cd5f2d8a2953badf3a9b2d
 
 pkgname = python-sqlit-tui
